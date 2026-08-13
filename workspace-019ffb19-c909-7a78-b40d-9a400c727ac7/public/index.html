@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prodaai — ИИ-агент-консультант для вашого сайту</title>
+<meta name="description" content="ИИ-агент, який консультує та продає прямо на вашому сайті, 24/7 — розуміє потребу клієнта, знімає заперечення й доводить до покупки.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7FAFC;
+    --panel:#FFFFFF;
+    --panel2:#F0F7F4;
+    --ink:#17212B;
+    --muted:#657381;
+    --mint:#16B982;
+    --mint-dim:#0D9367;
+    --red:#E85D4A;
+    --line:#DCE5EA;
+    --line-soft:#EAF0F3;
+    --shadow:0 18px 50px rgba(25,45,60,.09);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter',sans-serif; font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  .wrap{max-width:1100px; margin:0 auto; padding:0 28px;}
+  .display{font-family:'Manrope',sans-serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  ::selection{background:var(--mint); color:#073B2B;}
+  :focus-visible{outline:2px solid var(--mint); outline-offset:3px;}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;} }
+
+  /* NAV */
+  nav{position:sticky; top:0; z-index:50; background:rgba(247,250,252,0.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line-soft);}
+  .nav-inner{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:1100px; margin:0 auto;}
+  .logo{font-family:'Manrope'; font-weight:800; font-size:16px; letter-spacing:0.2px; display:flex; align-items:center; gap:8px;}
+  .logo .dot{width:7px; height:7px; border-radius:50%; background:var(--mint); box-shadow:0 0 8px var(--mint); display:inline-block;}
+  .logo b{color:var(--mint); font-weight:800;}
+  .nav-cta{font-family:'IBM Plex Mono'; font-size:13px; background:var(--mint); color:#073B2B; padding:9px 18px; border-radius:3px; text-decoration:none; font-weight:600;}
+
+  /* HERO */
+  header.hero{padding:76px 0 0 0; border-bottom:1px solid var(--line-soft); position:relative; overflow:hidden;}
+  header.hero::after{content:""; position:absolute; top:-30%; right:-8%; width:560px; height:560px; background:radial-gradient(circle, rgba(47,230,166,0.09) 0%, transparent 70%); pointer-events:none;}
+  .eyebrow{font-family:'IBM Plex Mono'; font-size:12.5px; letter-spacing:2px; color:var(--mint); text-transform:uppercase; margin-bottom:26px; display:flex; align-items:center; gap:8px;}
+  .eyebrow .dot{width:6px; height:6px; border-radius:50%; background:var(--mint); box-shadow:0 0 8px var(--mint);}
+  h1{font-family:'Manrope'; font-weight:800; font-size:clamp(32px,4.6vw,52px); line-height:1.08; letter-spacing:-0.5px; margin:0 0 22px 0; max-width:800px; position:relative; z-index:1;}
+  h1 em{font-style:normal; color:var(--mint);}
+  .hero-sub{font-size:18px; color:var(--muted); max-width:600px; margin-bottom:36px; position:relative; z-index:1;}
+  .hero-cta-row{display:flex; align-items:center; gap:20px; flex-wrap:wrap; margin-bottom:50px;}
+  .btn{font-family:'IBM Plex Mono'; font-size:15px; font-weight:600; background:var(--mint); color:#073B2B; padding:15px 30px; border-radius:3px; text-decoration:none; display:inline-block; transition:transform .15s ease, background .15s ease; border:none; cursor:pointer;}
+  .btn:hover{background:#4EF2BC; transform:translateY(-1px);}
+  .btn-ghost{font-family:'IBM Plex Mono'; font-size:14px; color:var(--muted); text-decoration:none; border-bottom:1px solid var(--line);}
+
+  /* PROBLEM — journey */
+  section.problem{padding:70px 0; border-bottom:1px solid var(--line-soft);}
+  .section-head{max-width:640px; margin-bottom:40px;}
+  .section-tag{font-family:'IBM Plex Mono'; font-size:12px; letter-spacing:2px; color:var(--mint); text-transform:uppercase; margin-bottom:14px;}
+  .section-title{font-family:'Manrope'; font-size:clamp(22px,2.8vw,30px); font-weight:700; line-height:1.2;}
+  .journey{display:flex; align-items:stretch; gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+  .jstep{flex:1; padding:22px 18px; border-right:1px solid var(--line); position:relative;}
+  .jstep:last-child{border-right:none; background:rgba(255,107,87,0.06);}
+  .jstep .jn{font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted);}
+  .jstep p{margin:10px 0 0 0; font-size:14.5px; color:var(--ink);}
+  .jstep:last-child .jn{color:var(--red);}
+  .jstep:last-child p{color:var(--red); font-weight:500;}
+  .jarrow{display:flex; align-items:center; padding:0 6px; color:var(--line); font-size:14px;}
+  @media (max-width:820px){
+    .journey{flex-direction:column;}
+    .jstep{border-right:none; border-bottom:1px solid var(--line);}
+    .jstep:last-child{border-bottom:none;}
+    .jarrow{display:none;}
+  }
+  .problem-note{margin-top:26px; font-size:16px; color:var(--ink); max-width:620px;}
+  .problem-note b{color:var(--mint); font-weight:600;}
+
+  /* WHY BOTS FAIL */
+  section.whynot{padding:56px 0; border-bottom:1px solid var(--line-soft); background:var(--panel);}
+  .whynot .wrap{display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center;}
+  @media (max-width:780px){.whynot .wrap{grid-template-columns:1fr;}}
+  .whynot h3{font-family:'Manrope'; font-size:20px; font-weight:700; margin:0 0 12px 0;}
+  .whynot p{color:var(--muted); font-size:15px; margin:0;}
+
+  /* OFFER — what it does */
+  section.offer{padding:76px 0; border-bottom:1px solid var(--line-soft);}
+  .offer-list{list-style:none; margin:40px 0 0 0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line-soft); border:1px solid var(--line-soft);}
+  .offer-list li{background:var(--bg); padding:22px 24px; font-size:15px; display:flex; gap:14px; align-items:flex-start;}
+  .offer-list li .ico{color:var(--mint); font-family:'IBM Plex Mono'; flex-shrink:0; padding-top:1px;}
+  @media (max-width:780px){.offer-list{grid-template-columns:1fr;}}
+
+  /* SHOWCASE — live chat */
+  section.showcase{padding:76px 0; border-bottom:1px solid var(--line-soft); background:var(--panel);}
+  .showcase-grid{display:grid; grid-template-columns:1fr 1.05fr; gap:56px; align-items:center;}
+  @media (max-width:900px){.showcase-grid{grid-template-columns:1fr;}}
+  .chat-mock{background:var(--bg); border:1px solid var(--line); border-radius:10px; overflow:hidden; box-shadow:var(--shadow);}
+  .chat-head{display:flex; align-items:center; gap:10px; padding:14px 18px; border-bottom:1px solid var(--line-soft); background:var(--panel2);}
+  .chat-head .av{width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, var(--mint), var(--mint-dim)); display:flex; align-items:center; justify-content:center; font-family:'Manrope'; font-weight:800; font-size:12px; color:#073B2B;}
+  .chat-head .name{font-family:'Manrope'; font-weight:700; font-size:14px;}
+  .chat-head .status{font-family:'IBM Plex Mono'; font-size:11px; color:var(--mint); display:flex; align-items:center; gap:5px;}
+  .chat-head .status .d{width:6px; height:6px; border-radius:50%; background:var(--mint); box-shadow:0 0 6px var(--mint);}
+  .chat-body{padding:20px 18px; display:flex; flex-direction:column; gap:12px;}
+  .msg{max-width:80%; padding:11px 14px; border-radius:10px; font-size:14px; line-height:1.5;}
+  .msg.user{align-self:flex-end; background:var(--panel2); border-bottom-right-radius:3px;}
+  .msg.bot{align-self:flex-start; background:rgba(22,185,130,0.07); border:1px solid rgba(22,185,130,0.22); border-bottom-left-radius:3px;}
+  .msg .t{display:block; font-family:'IBM Plex Mono'; font-size:10px; color:var(--muted); margin-top:6px;}
+  .showcase-copy .section-title{margin-bottom:14px;}
+  .showcase-copy p{color:var(--muted); font-size:15px; max-width:440px;}
+
+  /* BENEFITS (outcomes) */
+  section.benefits{padding:76px 0; border-bottom:1px solid var(--line-soft);}
+  .benefit-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line-soft); border:1px solid var(--line-soft); margin-top:44px;}
+  .benefit{background:var(--bg); padding:28px 22px;}
+  .benefit .bn{font-family:'IBM Plex Mono'; color:var(--mint); font-size:12px;}
+  .benefit h4{font-family:'Manrope'; font-size:16px; font-weight:700; margin:14px 0 8px 0;}
+  .benefit p{color:var(--muted); font-size:13.5px; margin:0; line-height:1.5;}
+  @media (max-width:860px){.benefit-grid{grid-template-columns:1fr 1fr;}}
+  @media (max-width:520px){.benefit-grid{grid-template-columns:1fr;}}
+
+  /* PRICING */
+  section.pricing{padding:88px 0;}
+  .price-box{max-width:560px; margin:0 auto; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:44px 42px; position:relative; overflow:hidden;}
+  .price-box::before{content:""; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--mint), var(--mint-dim));}
+  .ptag{font-family:'IBM Plex Mono'; font-size:12px; letter-spacing:2px; color:var(--mint); text-transform:uppercase;}
+  .pname{font-family:'Manrope'; font-size:23px; font-weight:800; margin:12px 0 4px 0;}
+  .pdesc{color:var(--muted); font-size:14.5px; margin-bottom:26px;}
+  .price-row{display:flex; align-items:baseline; gap:8px; margin-bottom:6px;}
+  .price-num{font-family:'Manrope'; font-size:48px; font-weight:800;}
+  .price-period{font-family:'IBM Plex Mono'; color:var(--muted); font-size:15px;}
+  .price-under{font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted); margin-bottom:26px;}
+  .price-list{list-style:none; margin:0 0 30px 0; padding:0;}
+  .price-list li{padding:12px 0; border-top:1px solid var(--line-soft); font-size:14.5px; display:flex; gap:12px;}
+  .price-list li:first-child{border-top:none;}
+  .price-list li::before{content:"→"; color:var(--mint); font-family:'IBM Plex Mono'; flex-shrink:0;}
+  .btn.full{display:block; text-align:center; width:100%;}
+  .price-note{text-align:center; font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted); margin-top:16px;}
+
+  /* FAQ */
+  section.faq{padding:0 0 90px 0;}
+  .faq-item{border-top:1px solid var(--line-soft); padding:24px 0;}
+  .faq-item:last-child{border-bottom:1px solid var(--line-soft);}
+  .faq-q{font-family:'Manrope'; font-size:16px; font-weight:700; margin-bottom:8px;}
+  .faq-a{color:var(--muted); font-size:14.5px; max-width:640px;}
+
+  footer{border-top:1px solid var(--line-soft); padding:32px 0;}
+  .footer-inner{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;}
+  .footer-inner .mono{font-size:12px; color:var(--muted);}
+
+  .reveal{opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+
+  /* LIGHT REDESIGN + VISUALS */
+  .nav-tools{display:flex;align-items:center;gap:10px;}
+  .lang-switch{display:flex;gap:3px;padding:3px;border:1px solid var(--line);border-radius:999px;background:#fff;}
+  .lang-switch button{border:0;background:transparent;color:var(--muted);font:600 11px 'IBM Plex Mono';padding:6px 9px;border-radius:999px;cursor:pointer;}
+  .lang-switch button.active{background:var(--ink);color:#fff;}
+  .hero-visual{margin:8px 0 64px;display:grid;grid-template-columns:1.2fr .8fr;gap:18px;align-items:stretch;}
+  .visual-card{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;}
+  .browser-bar{padding:11px 14px;border-bottom:1px solid var(--line-soft);display:flex;gap:6px;align-items:center;}
+  .browser-bar i{width:7px;height:7px;border-radius:50%;background:#CBD5DC;}
+  .browser-title{margin-left:8px;color:var(--muted);font:11px 'IBM Plex Mono';}
+  .mini-site{padding:22px;display:grid;grid-template-columns:1fr .85fr;gap:18px;min-height:220px;}
+  .mini-copy h3{font:800 22px/1.1 'Manrope';margin:12px 0 8px;}
+  .mini-copy p{font-size:12px;color:var(--muted);margin:0 0 15px;}
+  .mini-btn{display:inline-block;padding:8px 12px;background:var(--mint);border-radius:7px;font:700 10px 'IBM Plex Mono';color:#073B2B;}
+  .mini-chat{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#FBFDFC;align-self:center;}
+  .mini-chat-head{padding:9px 11px;border-bottom:1px solid var(--line-soft);font:700 10px 'Manrope';display:flex;gap:7px;align-items:center;}
+  .mini-chat-head span{width:8px;height:8px;border-radius:50%;background:var(--mint);}
+  .mini-msg{font-size:10px;line-height:1.35;padding:9px;margin:6px;border-radius:8px;max-width:90%;}
+  .mini-msg.user{background:#EDF2F5;margin-left:auto;}
+  .mini-msg.ai{background:#E8F8F2;border:1px solid #D4F0E6;}
+  .visual-dashboard{padding:22px;}
+  .dash-label{font:11px 'IBM Plex Mono';color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+  .metric{font:800 30px 'Manrope';margin:4px 0 12px;}
+  .bars{height:125px;display:flex;align-items:end;gap:8px;border-bottom:1px solid var(--line);padding:0 8px;}
+  .bar{flex:1;background:linear-gradient(180deg,#27C995,var(--mint));border-radius:6px 6px 0 0;min-height:15px;}
+  .bar:nth-child(1){height:32%;}.bar:nth-child(2){height:43%;}.bar:nth-child(3){height:50%;}.bar:nth-child(4){height:64%;}.bar:nth-child(5){height:72%;}.bar:nth-child(6){height:88%;}
+  .bar-labels{display:flex;justify-content:space-between;font:9px 'IBM Plex Mono';color:var(--muted);padding:6px 4px 0;}
+  section.stats{padding:76px 0;border-bottom:1px solid var(--line-soft);background:#EFF8F4;}
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:42px;align-items:center;}
+  .funnel{display:grid;gap:8px;margin-top:26px;}
+  .funnel-row{display:flex;align-items:center;gap:12px;}
+  .funnel-bar{height:38px;border-radius:8px;background:linear-gradient(90deg,#BFECDD,var(--mint));display:flex;align-items:center;padding:0 13px;font:700 12px 'IBM Plex Mono';color:#073B2B;}
+  .funnel-row:nth-child(1) .funnel-bar{width:100%;}.funnel-row:nth-child(2) .funnel-bar{width:78%;}.funnel-row:nth-child(3) .funnel-bar{width:57%;}.funnel-row:nth-child(4) .funnel-bar{width:40%;}
+  .disclaimer{font-size:11px;color:var(--muted);margin-top:14px;}
+  .quote p{margin:0 0 18px;font-size:14px;line-height:1.6;}
+  .quote .person{font:700 12px 'Manrope';}.quote .role{font-size:11px;color:var(--muted);margin-top:3px;}
+  @media(max-width:850px){.hero-visual,.stats-grid{grid-template-columns:1fr;}.mini-site{min-height:190px;}}
+  @media(max-width:520px){.nav-cta{display:none;}.nav-inner{padding:12px 18px;}.wrap{padding:0 18px;}.hero-visual{margin-bottom:42px;}.mini-site{grid-template-columns:1fr;}.mini-chat{display:none;}}
+
+
+  section.how-it-works{padding:76px 0;border-bottom:1px solid var(--line-soft);}
+  .how-grid{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:18px;align-items:center;margin-top:40px;}
+  .how-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;min-height:230px;box-shadow:0 10px 30px rgba(25,45,60,.05);position:relative;}
+  .how-num{font:600 11px 'IBM Plex Mono';color:var(--mint-dim);letter-spacing:.08em;}
+  .how-icon{font-size:30px;margin:18px 0 10px;}
+  .how-card h3{font-family:'Manrope';margin:0 0 8px;font-size:19px;}
+  .how-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.55;}
+  .how-arrow{font-size:28px;color:var(--mint-dim);font-weight:700;}
+  @media(max-width:850px){.how-grid{grid-template-columns:1fr;}.how-arrow{transform:rotate(90deg);text-align:center;}}
+/* ============================================================
+   ProdaAI — AI sales-agent chat widget (inlined, lazy, no deps)
+   ============================================================ */
+
+.try-agent{padding:76px 0; border-bottom:1px solid var(--line-soft); background:var(--panel);}
+@media (max-width:520px){.try-agent{padding:52px 0;}}
+
+.paa-chat{
+  display:flex; flex-direction:column;
+  background:var(--panel); border:1px solid var(--line); border-radius:16px;
+  box-shadow:var(--shadow); overflow:hidden;
+  font-family:'Inter',sans-serif; text-align:left;
+}
+/* Header */
+.paa-head{
+  display:flex; align-items:center; gap:11px;
+  padding:14px 16px; border-bottom:1px solid var(--line-soft);
+  background:linear-gradient(180deg,#F0F7F4, #FFFFFF);
+}
+.paa-avatar{
+  width:38px; height:38px; border-radius:12px; flex-shrink:0;
+  background:linear-gradient(135deg,#27C995,var(--mint-dim));
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; box-shadow:0 4px 14px rgba(22,185,130,.28);
+}
+.paa-head-meta{flex:1; min-width:0;}
+.paa-name{font-family:'Manrope',sans-serif; font-weight:700; font-size:14px; color:var(--ink); line-height:1.2;}
+.paa-status{font:600 11px 'IBM Plex Mono',monospace; color:var(--mint); display:flex; align-items:center; gap:5px; margin-top:2px;}
+.paa-status .paa-dot{width:6px; height:6px; border-radius:50%; background:var(--mint); box-shadow:0 0 6px var(--mint); animation:paaPulse 1.8s infinite;}
+@keyframes paaPulse{0%,100%{opacity:1}50%{opacity:.35}}
+.paa-close{
+  width:30px; height:30px; border:none; background:#EAF0F3; border-radius:9px;
+  color:var(--muted); font-size:17px; line-height:1; cursor:pointer; flex-shrink:0;
+}
+.paa-close:hover{background:#DFE8ED; color:var(--ink);}
+
+/* Messages */
+.paa-body{
+  flex:1; overflow-y:auto; padding:18px 16px; display:flex; flex-direction:column; gap:10px;
+  background:var(--bg); overscroll-behavior:contain; scroll-behavior:smooth;
+}
+.paa-msg{max-width:86%; padding:11px 14px; border-radius:14px; font-size:14px; line-height:1.5; word-wrap:break-word; white-space:pre-wrap;}
+.paa-msg--user{align-self:flex-end; background:var(--panel2); color:var(--ink); border-bottom-right-radius:5px; border:1px solid var(--line-soft);}
+.paa-msg--bot{align-self:flex-start; background:#fff; color:var(--ink); border:1px solid rgba(22,185,130,.25); border-bottom-left-radius:5px; box-shadow:0 3px 10px rgba(25,45,60,.05);}
+.paa-msg--sys{align-self:stretch; padding:0; background:transparent; box-shadow:none; max-width:100%;}
+.paa-msg a{color:var(--mint-dim);}
+
+/* Typing indicator */
+.paa-typing{display:inline-flex; gap:4px; padding:4px 2px;}
+.paa-typing i{width:6px; height:6px; border-radius:50%; background:var(--muted); opacity:.5; animation:paaBounce 1.2s infinite;}
+.paa-typing i:nth-child(2){animation-delay:.15s;}
+.paa-typing i:nth-child(3){animation-delay:.3s;}
+@keyframes paaBounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:.9}}
+
+/* Quick reply chips */
+.paa-quick{display:flex; gap:8px; flex-wrap:wrap; padding:10px 14px 4px; background:var(--bg);}
+.paa-chip{
+  border:1px solid var(--line); background:#fff; color:var(--ink);
+  font:600 12.5px 'Manrope',sans-serif; padding:8px 13px; border-radius:999px; cursor:pointer;
+  transition:border-color .15s ease, background .15s ease, transform .12s ease;
+}
+.paa-chip:hover{border-color:var(--mint); background:#F0F7F4; transform:translateY(-1px);}
+
+/* Input row */
+.paa-input{display:flex; align-items:flex-end; gap:9px; padding:12px 14px; background:#fff; border-top:1px solid var(--line-soft);}
+.paa-textarea{
+  flex:1; resize:none; border:1px solid var(--line); border-radius:12px; background:var(--bg);
+  font:14px/1.45 'Inter',sans-serif; color:var(--ink); padding:11px 13px; max-height:120px; outline:none;
+}
+.paa-textarea:focus{border-color:var(--mint);}
+.paa-send{
+  width:42px; height:42px; flex-shrink:0; border:none; border-radius:12px;
+  background:linear-gradient(135deg,#27C995,var(--mint-dim)); color:#073B2B;
+  font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:transform .12s ease, opacity .15s ease;
+}
+.paa-send:hover{transform:translateY(-1px);}
+.paa-send:disabled{opacity:.5; cursor:default; transform:none;}
+
+/* Lead confirmation card */
+.paa-leadcard{background:#fff; border:1px solid rgba(22,185,130,.35); border-radius:14px; padding:14px 15px; box-shadow:0 6px 20px rgba(25,45,60,.07);}
+.paa-leadcard-title{font:700 13.5px 'Manrope',sans-serif; color:var(--ink); margin-bottom:10px;}
+.paa-leadrow{display:flex; gap:10px; padding:5px 0; font-size:13.5px; border-top:1px solid var(--line-soft);}
+.paa-leadrow:first-of-type{border-top:none;}
+.paa-leadkey{color:var(--muted); flex-shrink:0; min-width:64px;}
+.paa-leadval{color:var(--ink); font-weight:500; word-break:break-word;}
+.paa-leadactions{display:flex; gap:9px; margin-top:12px;}
+.paa-leadbtn{flex:1; border:none; border-radius:11px; padding:11px 14px; font:600 13.5px 'Manrope',sans-serif; cursor:pointer; transition:transform .12s ease;}
+.paa-leadbtn:hover{transform:translateY(-1px);}
+.paa-leadbtn--yes{background:linear-gradient(135deg,#27C995,var(--mint-dim)); color:#073B2B;}
+.paa-leadbtn--edit{background:#EAF0F3; color:var(--ink);}
+
+/* ---- Floating launcher + panel ---- */
+.paa-fab{
+  position:fixed; right:20px; bottom:20px; z-index:998;
+  display:flex; align-items:center; gap:9px;
+  background:linear-gradient(135deg,#1BC78E,var(--mint-dim)); color:#073B2B;
+  border:none; border-radius:999px; padding:13px 18px; cursor:pointer;
+  font:700 14px 'Manrope',sans-serif; box-shadow:0 10px 30px rgba(13,147,103,.38);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.paa-fab:hover{transform:translateY(-2px); box-shadow:0 14px 36px rgba(13,147,103,.45);}
+.paa-fab .paa-fab-emoji{font-size:19px; line-height:1;}
+.paa-fab .paa-fab-pulse{width:8px; height:8px; border-radius:50%; background:#fff; animation:paaPulse 1.8s infinite;}
+
+.paa-float{
+  position:fixed; right:20px; bottom:88px; z-index:999;
+  width:392px; max-width:calc(100vw - 28px);
+  height:min(640px, calc(100vh - 118px));
+  display:none; flex-direction:column;
+}
+.paa-float.paa-open{display:flex; animation:paaIn .22s ease;}
+@keyframes paaIn{from{opacity:0; transform:translateY(12px)}to{opacity:1; transform:translateY(0)}}
+
+/* ---- Inline embedded chat (in the landing section) ---- */
+.paa-inline{width:100%; max-width:760px; margin:0 auto; height:540px;}
+
+/* ---- Mobile ---- */
+@media (max-width:640px){
+  .paa-fab{right:14px; bottom:14px; padding:12px 16px;}
+  .paa-fab .paa-fab-label{display:none;}
+  .paa-float{
+    right:0; bottom:0; left:0; width:100%; max-width:100%;
+    height:min(78vh, 640px); border-radius:20px 20px 0 0;
+    border-left:none; border-right:none; border-bottom:none;
+  }
+  .paa-input{padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));}
+  .paa-inline{height:480px;}
+}
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo"><span class="dot"></span>Proda<b>AI</b></div>
+    <div class="nav-tools">
+      <div class="lang-switch" aria-label="Language"><button id="ruBtn" class="active" onclick="setLang('ru')">RU</button><button id="uaBtn" onclick="setLang('ua')">UA</button></div>
+      <a href="#pricing" class="nav-cta" data-i18n="navCta">Консультация →</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow"><span class="dot"></span><span data-i18n="eyebrow">Работает на сайте · 24/7, без выходных</span></div>
+    <h1 data-i18n="heroTitle">Сколько клиентов ушли молча,<br>пока сайт <em>не ответил</em> вовремя?</h1>
+    <p class="hero-sub" data-i18n="heroSub">ИИ-агент-консультант, который подбирает товары из вашего ассортимента, отвечает только проверенными фактами и оформляет заявку с согласия клиента — прямо на вашем сайте, в любое время суток.</p>
+    <div class="hero-cta-row">
+      <a href="#pricing" class="btn" data-i18n="heroBtn" data-i18n="priceBtn">Получить консультацию</a>
+      <a href="#showcase" class="btn-ghost" data-i18n="heroGhost">Посмотреть диалог с клиентом ↓</a>
+    </div>
+    <div class="hero-visual">
+      <div class="visual-card">
+        <div class="browser-bar"><i></i><i></i><i></i><span class="browser-title">your-store.com</span></div>
+        <div class="mini-site">
+          <div class="mini-copy"><div class="dash-label">AI SALES ASSISTANT</div><h3 data-i18n="visualTitle">Продавец прямо на сайте</h3><p data-i18n="visualSub">Отвечает, подбирает товар и помогает принять решение.</p><span class="mini-btn" data-i18n="visualBtn">Задать вопрос →</span></div>
+          <div class="mini-chat"><div class="mini-chat-head"><span></span><span data-i18n="chatName">AI-консультант</span></div><div class="mini-msg user" data-i18n="chatUser">Нужны наушники до 2000 грн</div><div class="mini-msg ai" data-i18n="chatAi">Подберу 3 подходящих варианта. Что важнее: автономность или звук?</div></div>
+        </div>
+      </div>
+      <div class="visual-card visual-dashboard">
+        <div class="dash-label" data-i18n="dashLabel">Пример динамики заявок</div>
+        <div class="metric">+<span>38</span>%</div>
+        <div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+        <div class="bar-labels"><span>Нед. 1</span><span>Нед. 2</span><span>Нед. 3</span><span>Нед. 4</span><span>Нед. 5</span><span>Нед. 6</span></div>
+        <div class="disclaimer" data-i18n="dashNote">Иллюстративный пример, не гарантия результата. Реальная динамика зависит от бизнеса.</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="problem">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-tag" data-i18n="problemTag">Что происходит сейчас</div>
+      <div class="section-title" data-i18n="problemTitle">Проблема не всегда в рекламе или цене — сайт просто не умеет продавать сам</div>
+    </div>
+    <div class="journey reveal">
+      <div class="jstep"><div class="jn">01</div><p data-i18n="j1">Человек зашёл на сайт</p></div>
+      <div class="jarrow">→</div>
+      <div class="jstep"><div class="jn">02</div><p data-i18n="j2">Посмотрел товар</p></div>
+      <div class="jarrow">→</div>
+      <div class="jstep"><div class="jn">03</div><p data-i18n="j3">Задал вопрос</p></div>
+      <div class="jarrow">→</div>
+      <div class="jstep"><div class="jn" data-i18n="j4n">04 · ЗДЕСЬ ТЕРЯЕТСЯ КЛИЕНТ</div><p data-i18n="j4p">Не получил нормального ответа — и ушёл к конкуренту</p></div>
+    </div>
+    <p class="problem-note reveal" data-i18n="problemNote">Обычный чат-бот здесь тоже не спасает: он выдаёт заготовленные ответы, не понимает реальную потребность клиента и часто заканчивает разговор там, где <b>настоящий продавец только начал бы работать с возражениями</b>.</p>
+  </div>
+</section>
+
+<section class="whynot">
+  <div class="wrap">
+    <div class="reveal">
+      <h3 data-i18n="botTitle">Обычный чат-бот отвечает по сценарию</h3>
+      <p data-i18n="botText">Заготовленные кнопки, дерево вопросов, тупик при первом нестандартном сообщении — клиент чувствует, что говорит со стеной, а не с продавцом.</p>
+    </div>
+    <div class="reveal">
+      <h3 data-i18n="agentTitle">ИИ-агент ведёт разговор</h3>
+      <p data-i18n="agentText">Понимает, что человек имеет в виду, даже если вопрос сформулирован нечётко, и продолжает диалог до результата — как это сделал бы живой продавец.</p>
+    </div>
+  </div>
+</section>
+
+<section class="offer">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-tag" data-i18n="offerTag">Что делает агент</div>
+      <div class="section-title" data-i18n="offerTitle">Дополнительный продавец, который находится прямо там, где клиент принимает решение о покупке</div>
+    </div>
+    <ul class="offer-list reveal">
+      <li><span class="ico">→</span data-i18n="o1">Понимает запрос и сам направляет его нужному специалисту: продажи, точные характеристики или поддержка</li>
+      <li><span class="ico">→</span data-i18n="o2">Никогда не выдумывает цену, наличие или характеристики — только проверенные данные из базы товаров</li>
+      <li><span class="ico">→</span data-i18n="o3">Подбирает 1–3 подходящие модели с объяснением, почему именно они, а не просто выдаёт список</li>
+      <li><span class="ico">→</span data-i18n="o4">Отвечает по доставке, оплате, гарантии и возврату — тоже строго по фактам, без домыслов</li>
+      <li><span class="ico">→</span data-i18n="o5">Прежде чем взять телефон клиента, явно спрашивает согласие на обработку данных</li>
+      <li><span class="ico">→</span data-i18n="o6">Подтверждает заявку только по точной фразе клиента — исключает случайные заявки</li>
+      <li><span class="ico">→</span data-i18n="o7">Передаёт готовую, проверенную заявку менеджеру в Telegram</li>
+      <li><span class="ico">→</span data-i18n="o8">Отвечает на украинском и русском, точно по языку клиента, не смешивая их в одном ответе</li>
+    </ul>
+  </div>
+</section>
+
+<section class="showcase" id="showcase">
+  <div class="wrap">
+    <div class="showcase-grid">
+      <div class="reveal">
+        <div class="chat-mock">
+          <div class="chat-head">
+            <div class="av">AI</div>
+            <div style="flex:1;">
+              <div class="name">Консультант магазина</div>
+              <div class="status"><span class="d"></span>online</div>
+            </div>
+          </div>
+          <div class="chat-body">
+            <div class="msg user">Порадьте повербанк для телефону і ноутбука, щоб на 2 дні вистачило<span class="t">14:02</span></div>
+            <div class="msg bot">Для двох днів автономності орієнтуйтесь на ємність від 20 000 mAh і вище, бажано з підтримкою швидкої зарядки Power Delivery для ноутбука. Орієнтовна ціна на дату оновлення бази — вказана в картці товару; актуальну ціну та наявність уточнить менеджер. Показати конкретні моделі?<span class="t">14:02</span></div>
+            <div class="msg user">Так, і хочу оформити заявку<span class="t">14:03</span></div>
+            <div class="msg bot">Щоб передати вашу заявку менеджеру та зв'язатися з вами, потрібні контактні дані. Чи погоджуєтесь ви на обробку й передачу наданих даних для оформлення вашого звернення?<span class="t">14:03</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="showcase-copy reveal">
+        <div class="section-tag" data-i18n="showTag">Как это выглядит на практике</div>
+        <div class="section-title" data-i18n="showTitle">Ни одной выдуманной цифры и ни одной заявки без согласия клиента</div>
+        <p data-i18n="showText">Это реальный сценарий диалога агента — не рекламная постановка. Он не называет цену от себя, отправляет на уточнение к менеджеру и обязательно спрашивает согласие клиента, прежде чем взять его контакты.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="wrap">
+    <div class="stats-grid">
+      <div class="reveal"><div class="section-tag" data-i18n="statsTag">Как появляется рост</div><div class="section-title" data-i18n="statsTitle">Больше диалогов → больше квалифицированных заявок → больше возможностей для продаж</div><div class="funnel"><div class="funnel-row"><div class="funnel-bar" data-i18n="f1">Посетители сайта</div></div><div class="funnel-row"><div class="funnel-bar" data-i18n="f2">Диалоги с агентом</div></div><div class="funnel-row"><div class="funnel-bar" data-i18n="f3">Квалифицированные заявки</div></div><div class="funnel-row"><div class="funnel-bar" data-i18n="f4">Продажи</div></div></div><div class="disclaimer" data-i18n="funnelNote">Схема показывает логику воронки, а не обещание конкретного процента роста.</div></div>
+      <div class="visual-card visual-dashboard reveal"><div class="dash-label" data-i18n="miniDash">Мини-дашборд</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0"><div style="padding:15px;border:1px solid var(--line);border-radius:10px"><div class="dash-label">DIALOGS</div><div class="metric" style="font-size:24px">+64%</div></div><div style="padding:15px;border:1px solid var(--line);border-radius:10px"><div class="dash-label">LEADS</div><div class="metric" style="font-size:24px">+41%</div></div></div><div class="disclaimer" data-i18n="miniDashNote">Цифры на макете — демонстрационные, чтобы показать формат аналитики.</div></div>
+    </div>
+  </div>
+</section>
+
+
+<section class="try-agent" id="try-agent">
+  <div class="wrap">
+    <div class="section-head reveal" style="margin:0 auto 34px auto; text-align:center; max-width:620px;">
+      <div class="section-tag" style="justify-content:center; display:flex;" data-i18n="tryTag">Попробуйте прямо сейчас</div>
+      <div class="section-title" data-i18n="tryTitle">Попробуйте AI-продавца прямо сейчас</div>
+      <p style="color:var(--muted); font-size:15px; margin:14px 0 0;" data-i18n="trySub">Это не демо-скрипт — это тот же агент, который будет работать на вашем сайте. Задайте ему вопрос.</p>
+    </div>
+    <div class="reveal" id="paa-inline-chat" style="min-height:540px;" aria-label="AI-консультант"></div>
+  </div>
+</section>
+
+
+<section class="how-it-works" id="how-it-works">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-tag" data-i18n="howTag">Как это работает</div>
+      <div class="section-title" data-i18n="howTitle">От первого вопроса до заявки — без лишних действий</div>
+    </div>
+    <div class="how-grid reveal">
+      <div class="how-card"><div class="how-num">01</div><div class="how-icon">👤</div><h3 data-i18n="how1t">Посетитель</h3><p data-i18n="how1p">Заходит на сайт и задаёт вопрос о товаре, цене или условиях покупки.</p></div>
+      <div class="how-arrow">→</div>
+      <div class="how-card"><div class="how-num">02</div><div class="how-icon">🤖</div><h3 data-i18n="how2t">AI-продавец</h3><p data-i18n="how2p">Понимает потребность, подбирает товар, отвечает на вопросы и работает с возражениями.</p></div>
+      <div class="how-arrow">→</div>
+      <div class="how-card"><div class="how-num">03</div><div class="how-icon">📲</div><h3 data-i18n="how3t">Заявка менеджеру</h3><p data-i18n="how3p">После согласия клиента заявка передаётся менеджеру, например, прямо в Telegram.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="benefits">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-tag" data-i18n="benefitTag">Что это даёт бизнесу</div>
+      <div class="section-title" data-i18n="benefitTitle">Не «прикольный чат с ИИ», а дополнительный продавец в штате</div>
+    </div>
+    <div class="benefit-grid reveal">
+      <div class="benefit"><div class="bn">01</div><h4 data-i18n="b1t">Клиент доверяет ответам</h4><p data-i18n="b1p">Агент честно говорит «не нашёл подтверждённой информации», если данных нет, — вместо того чтобы что-то придумать.</p></div>
+      <div class="benefit"><div class="bn">02</div><h4 data-i18n="b2t">Заявки приходят проверенными</h4><p data-i18n="b2p">В Telegram попадают только заявки с явным согласием клиента и подтверждённой точной фразой — без случайных обращений.</p></div>
+      <div class="benefit"><div class="bn">03</div><h4 data-i18n="b3t">Меньше клиентов уходит к конкуренту</h4><p data-i18n="b3p">Пока сайт молчит, покупатель ищет ответ в другом месте. Агент не даёт этой паузе случиться.</p></div>
+      <div class="benefit"><div class="bn">04</div><h4 data-i18n="b4t">Говорит на языке клиента</h4><p data-i18n="b4p">Определяет украинский или русский по обращению и не смешивает языки в одном ответе — звучит естественно для обеих аудиторий.</p></div>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <div class="section-head reveal" style="margin:0 auto 40px auto; text-align:center; max-width:520px;">
+      <div class="section-tag" style="justify-content:center; display:flex;" data-i18n="nextTag">Следующий шаг</div>
+      <div class="section-title" data-i18n="nextTitle">Хотите такого же агента для своего магазина?</div>
+    </div>
+    <div class="price-box reveal" style="text-align:center;">
+      <div class="ptag" data-i18n="priceTag">Бесплатная консультация</div>
+      <div class="pname" data-i18n="priceName">Обсудим ваш ассортимент и сценарии</div>
+      <div class="pdesc" style="max-width:420px; margin-left:auto; margin-right:auto;" data-i18n="priceDesc">Расскажите, что продаёте и как сейчас отвечаете клиентам — предложим, как настроить агента под ваш магазин, и назовём стоимость под ваш случай.</div>
+      <a href="#try-agent" class="btn full" data-i18n="priceBtn">Получить консультацию</a>
+      <div class="price-note" data-i18n="priceNote">Отвечаем в течение 1 рабочего дня</div>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="wrap">
+    <div class="faq-item reveal">
+      <div class="faq-q" data-i18n="faq1q">Придумывает ли агент характеристики, если их нет в базе?</div>
+      <div class="faq-a" data-i18n="faq1a">Нет — если подтверждённых данных нет, он прямо скажет об этом и предложит уточнить у менеджера, а не даст правдоподобный, но неверный ответ.</div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q" data-i18n="faq2q">Может ли агент случайно оформить заявку без согласия клиента?</div>
+      <div class="faq-a" data-i18n="faq2a">Нет — он не запросит телефон без явного согласия и не подтвердит заявку, пока клиент не пришлёт точную подтверждающую фразу.</div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q" data-i18n="faq3q">Агент отвечает только на украинском?</div>
+      <div class="faq-a" data-i18n="faq3a">По умолчанию — да, но переходит на русский, если клиент сам об этом попросит, и никогда не смешивает языки в одном ответе.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div class="mono display" style="font-family:'Manrope'; font-weight:800;"><span style="color:var(--mint);">●</span> ProdaAI © 2026</div>
+    <div class="mono" data-i18n="footerTag">ИИ-АГЕНТ-КОНСУЛЬТАНТ ДЛЯ ВАШЕГО САЙТА</div>
+  </div>
+</footer>
+
+<script>
+const translations={
+ru:{navCta:'Консультация →',eyebrow:'Работает на сайте · 24/7, без выходных',heroTitle:'Сколько клиентов ушли молча,<br>пока сайт <em>не ответил</em> вовремя?',heroSub:'ИИ-агент-консультант, который подбирает товары из вашего ассортимента, отвечает только проверенными фактами и оформляет заявку с согласия клиента — прямо на вашем сайте, в любое время суток.',heroBtn:'Получить консультацию',heroGhost:'Посмотреть диалог с клиентом ↓',visualTitle:'Продавец прямо на сайте',visualSub:'Отвечает, подбирает товар и помогает принять решение.',visualBtn:'Задать вопрос →',chatName:'AI-консультант',chatUser:'Нужны наушники до 2000 грн',chatAi:'Подберу 3 подходящих варианта. Что важнее: автономность или звук?',dashLabel:'Пример динамики заявок',dashNote:'Иллюстративный пример, не гарантия результата. Реальная динамика зависит от бизнеса.',statsTag:'Как появляется рост',statsTitle:'Больше диалогов → больше квалифицированных заявок → больше возможностей для продаж',f1:'Посетители сайта',f2:'Диалоги с агентом',f3:'Квалифицированные заявки',f4:'Продажи',funnelNote:'Схема показывает логику воронки, а не обещание конкретного процента роста.',miniDash:'Мини-дашборд',miniDashNote:'Цифры на макете — демонстрационные, чтобы показать формат аналитики.',howTag:'Как это работает',howTitle:'От первого вопроса до заявки — без лишних действий',how1t:'Посетитель',how1p:'Заходит на сайт и задаёт вопрос о товаре, цене или условиях покупки.',how2t:'AI-продавец',how2p:'Понимает потребность, подбирает товар, отвечает на вопросы и работает с возражениями.',how3t:'Заявка менеджеру',how3p:'После согласия клиента заявка передаётся менеджеру, например, прямо в Telegram.',testTag:'Отзывы',testTitle:'Что важно владельцам магазинов',q1:'«Наконец-то на сайте есть кто-то, кто отвечает клиенту сразу, а не через несколько часов.»',p1:'Владелец интернет-магазина',r1:'Пример формата отзыва',q2:'«Самое полезное — агент не просто выдаёт товар, а помогает сравнить варианты и продолжает диалог.»',p2:'Руководитель отдела продаж',r2:'Пример формата отзыва',q3:'«Заявка приходит уже после нормального диалога. Менеджеру остаётся связаться с клиентом.»',p3:'Владелец продающего сайта',r3:'Пример формата отзыва',q4:'«Агент работает даже тогда, когда менеджеры заняты или уже закончили рабочий день.»',p4:'Владелец интернет-магазина',r4:'Пример формата отзыва',testNote:'Важно: это демонстрационные тексты. Перед публикацией замените их на реальные отзывы клиентов.'},
+ua:{navCta:'Консультація →',eyebrow:'Працює на сайті · 24/7, без вихідних',heroTitle:'Скільки клієнтів пішли мовчки,<br>поки сайт <em>не відповів</em> вчасно?',heroSub:'AI-агент-консультант, який підбирає товари з вашого асортименту, відповідає лише перевіреними фактами та оформлює заявку за згодою клієнта — прямо на сайті, у будь-який час.',heroBtn:'Отримати консультацію',heroGhost:'Подивитися діалог із клієнтом ↓',visualTitle:'Продавець прямо на сайті',visualSub:'Відповідає, підбирає товар і допомагає прийняти рішення.',visualBtn:'Поставити запитання →',chatName:'AI-консультант',chatUser:'Потрібні навушники до 2000 грн',chatAi:'Підберу 3 відповідні варіанти. Що важливіше: автономність чи звук?',dashLabel:'Приклад динаміки заявок',dashNote:'Ілюстративний приклад, не гарантія результату. Реальна динаміка залежить від бізнесу.',statsTag:'Як з’являється зростання',statsTitle:'Більше діалогів → більше кваліфікованих заявок → більше можливостей для продажів',f1:'Відвідувачі сайту',f2:'Діалоги з агентом',f3:'Кваліфіковані заявки',f4:'Продажі',funnelNote:'Схема показує логіку воронки, а не обіцянку конкретного відсотка зростання.',miniDash:'Міні-дашборд',miniDashNote:'Цифри на макеті — демонстраційні, щоб показати формат аналітики.',howTag:'Як це працює',howTitle:'Від першого питання до заявки — без зайвих дій',how1t:'Відвідувач',how1p:'Заходить на сайт і ставить питання про товар, ціну або умови покупки.',how2t:'AI-продавець',how2p:'Розуміє потребу, підбирає товар, відповідає на питання та працює із запереченнями.',how3t:'Заявка менеджеру',how3p:'Після згоди клієнта заявка передається менеджеру, наприклад, прямо в Telegram.',testTag:'Відгуки',testTitle:'Що важливо власникам магазинів',q1:'«Нарешті на сайті є хтось, хто відповідає клієнту одразу, а не через кілька годин.»',p1:'Власник інтернет-магазину',r1:'Приклад формату відгуку',q2:'«Найкорисніше — агент не просто показує товар, а допомагає порівняти варіанти й продовжує діалог.»',p2:'Керівник відділу продажів',r2:'Приклад формату відгуку',q3:'«Заявка надходить уже після нормального діалогу. Менеджеру залишається зв’язатися з клієнтом.»',p3:'Власник сайту, що продає',r3:'Приклад формату відгуку',q4:'«Агент працює навіть тоді, коли менеджери зайняті або вже завершили робочий день.»',p4:'Власник інтернет-магазину',r4:'Приклад формату відгуку',testNote:'Важливо: це демонстраційні тексти. Перед публікацією замініть їх на реальні відгуки клієнтів.'}};
+const extra={ru:{problemTag:'Что происходит сейчас',problemTitle:'Проблема не всегда в рекламе или цене — сайт просто не умеет продавать сам',j1:'Человек зашёл на сайт',j2:'Посмотрел товар',j3:'Задал вопрос',j4n:'04 · ЗДЕСЬ ТЕРЯЕТСЯ КЛИЕНТ',j4p:'Не получил нормального ответа — и ушёл к конкуренту',problemNote:'Обычный чат-бот здесь тоже не спасает: он выдаёт заготовленные ответы, не понимает реальную потребность клиента и часто заканчивает разговор там, где <b>настоящий продавец только начал бы работать с возражениями</b>.',botTitle:'Обычный чат-бот отвечает по сценарию',botText:'Заготовленные кнопки, дерево вопросов, тупик при первом нестандартном сообщении — клиент чувствует, что говорит со стеной, а не с продавцом.',agentTitle:'ИИ-агент ведёт разговор',agentText:'Понимает, что человек имеет в виду, даже если вопрос сформулирован нечётко, и продолжает диалог до результата — как это сделал бы живой продавец.',offerTag:'Что делает агент',offerTitle:'Дополнительный продавец, который находится прямо там, где клиент принимает решение о покупке',o1:'Понимает запрос и сам направляет его нужному специалисту: продажи, точные характеристики или поддержка',o2:'Никогда не выдумывает цену, наличие или характеристики — только проверенные данные из базы товаров',o3:'Подбирает 1–3 подходящие модели с объяснением, почему именно они, а не просто выдаёт список',o4:'Отвечает по доставке, оплате, гарантии и возврату — тоже строго по фактам, без домыслов',o5:'Прежде чем взять телефон клиента, явно спрашивает согласие на обработку данных',o6:'Подтверждает заявку только по точной фразе клиента — исключает случайные заявки',o7:'Передаёт готовую, проверенную заявку менеджеру в Telegram',o8:'Отвечает на украинском и русском, точно по языку клиента, не смешивая их в одном ответе',showTag:'Как это выглядит на практике',showTitle:'Ни одной выдуманной цифры и ни одной заявки без согласия клиента',showText:'Это реальный сценарий диалога агента — не рекламная постановка. Он не называет цену от себя, отправляет на уточнение к менеджеру и обязательно спрашивает согласие клиента, прежде чем взять его контакты.',benefitTag:'Что это даёт бизнесу',benefitTitle:'Не «прикольный чат с ИИ», а дополнительный продавец в штате',b1t:'Клиент доверяет ответам',b1p:'Агент честно говорит «не нашёл подтверждённой информации», если данных нет, — вместо того чтобы что-то придумать.',b2t:'Заявки приходят проверенными',b2p:'В Telegram попадают только заявки с явным согласием клиента и подтверждённой точной фразой — без случайных обращений.',b3t:'Меньше клиентов уходит к конкуренту',b3p:'Пока сайт молчит, покупатель ищет ответ в другом месте. Агент не даёт этой паузе случиться.',b4t:'Говорит на языке клиента',b4p:'Определяет украинский или русский по обращению и не смешивает языки в одном ответе — звучит естественно для обеих аудиторий.',nextTag:'Следующий шаг',nextTitle:'Хотите такого же агента для своего магазина?',priceTag:'Бесплатная консультация',priceName:'Обсудим ваш ассортимент и сценарии',priceDesc:'Расскажите, что продаёте и как сейчас отвечаете клиентам — предложим, как настроить агента под ваш магазин, и назовём стоимость под ваш случай.',priceBtn:'Получить консультацию',priceNote:'Отвечаем в течение 1 рабочего дня',faq1q:'Придумывает ли агент характеристики, если их нет в базе?',faq1a:'Нет — если подтверждённых данных нет, он прямо скажет об этом и предложит уточнить у менеджера, а не даст правдоподобный, но неверный ответ.',faq2q:'Может ли агент случайно оформить заявку без согласия клиента?',faq2a:'Нет — он не запросит телефон без явного согласия и не подтвердит заявку, пока клиент не пришлёт точную подтверждающую фразу.',faq3q:'Агент отвечает только на украинском?',faq3a:'По умолчанию — да, но переходит на русский, если клиент сам об этом попросит, и никогда не смешивает языки в одном ответе.',footerTag:'ИИ-АГЕНТ-КОНСУЛЬТАНТ ДЛЯ ВАШЕГО САЙТА',tryTag:'Попробуйте прямо сейчас',tryTitle:'Попробуйте AI-продавца прямо сейчас',trySub:'Это не демо-скрипт — это тот же агент, который будет работать на вашем сайте. Задайте ему вопрос.'},ua:{problemTag:'Що відбувається зараз',problemTitle:'Проблема не завжди в рекламі чи ціні — сайт просто не вміє продавати сам',j1:'Людина зайшла на сайт',j2:'Переглянула товар',j3:'Поставила запитання',j4n:'04 · ТУТ ВТРАЧАЄТЬСЯ КЛІЄНТ',j4p:'Не отримала нормальної відповіді — і пішла до конкурента',problemNote:'Звичайний чат-бот тут теж не рятує: він видає заготовлені відповіді, не розуміє реальну потребу клієнта й часто завершує розмову там, де <b>справжній продавець лише почав би працювати із запереченнями</b>.',botTitle:'Звичайний чат-бот відповідає за сценарієм',botText:'Заготовлені кнопки, дерево запитань, глухий кут при першому нестандартному повідомленні — клієнт відчуває, що говорить зі стіною, а не з продавцем.',agentTitle:'AI-агент веде розмову',agentText:'Розуміє, що має на увазі людина, навіть якщо запит сформульований нечітко, і продовжує діалог до результату — як це зробив би живий продавець.',offerTag:'Що робить агент',offerTitle:'Додатковий продавець, який знаходиться прямо там, де клієнт приймає рішення про покупку',o1:'Розуміє запит і сам направляє його потрібному спеціалісту: продажі, точні характеристики або підтримка',o2:'Ніколи не вигадує ціну, наявність чи характеристики — лише перевірені дані з бази товарів',o3:'Підбирає 1–3 відповідні моделі з поясненням, чому саме вони, а не просто видає список',o4:'Відповідає щодо доставки, оплати, гарантії та повернення — теж лише за фактами, без домислів',o5:'Перш ніж отримати телефон клієнта, прямо запитує згоду на обробку даних',o6:'Підтверджує заявку лише за точною фразою клієнта — виключає випадкові заявки',o7:'Передає готову, перевірену заявку менеджеру в Telegram',o8:'Відповідає українською та російською, точно мовою клієнта, не змішуючи їх в одній відповіді',showTag:'Як це виглядає на практиці',showTitle:'Жодної вигаданої цифри й жодної заявки без згоди клієнта',showText:'Це реальний сценарій діалогу агента — не рекламна постановка. Він не називає ціну від себе, відправляє на уточнення до менеджера й обов’язково запитує згоду клієнта, перш ніж отримати його контакти.',benefitTag:'Що це дає бізнесу',benefitTitle:'Не «прикольний чат з AI», а додатковий продавець у штаті',b1t:'Клієнт довіряє відповідям',b1p:'Агент чесно каже «не знайшов підтвердженої інформації», якщо даних немає, — замість того щоб щось вигадати.',b2t:'Заявки надходять перевіреними',b2p:'У Telegram потрапляють лише заявки з явною згодою клієнта та підтвердженою точною фразою — без випадкових звернень.',b3t:'Менше клієнтів іде до конкурентів',b3p:'Поки сайт мовчить, покупець шукає відповідь в іншому місці. Агент не дає цій паузі статися.',b4t:'Говорить мовою клієнта',b4p:'Визначає українську або російську за зверненням і не змішує мови в одній відповіді — природно звучить для обох аудиторій.',nextTag:'Наступний крок',nextTitle:'Хочете такого ж агента для свого магазину?',priceTag:'Безкоштовна консультація',priceName:'Обговоримо ваш асортимент і сценарії',priceDesc:'Розкажіть, що продаєте та як зараз відповідаєте клієнтам — запропонуємо, як налаштувати агента під ваш магазин, і назвемо вартість під ваш випадок.',priceBtn:'Отримати консультацію',priceNote:'Відповідаємо протягом 1 робочого дня',faq1q:'Чи вигадує агент характеристики, якщо їх немає в базі?',faq1a:'Ні — якщо підтверджених даних немає, він прямо скаже про це й запропонує уточнити у менеджера, а не дасть правдоподібну, але неправильну відповідь.',faq2q:'Чи може агент випадково оформити заявку без згоди клієнта?',faq2a:'Ні — він не запросить телефон без явної згоди й не підтвердить заявку, доки клієнт не надішле точну фразу підтвердження.',faq3q:'Агент відповідає лише українською?',faq3a:'За замовчуванням — українською, але переходить на російську, якщо клієнт сам цього попросить, і ніколи не змішує мови в одній відповіді.',footerTag:'AI-АГЕНТ-КОНСУЛЬТАНТ ДЛЯ ВАШОГО САЙТУ',tryTag:'Спробуйте прямо зараз',tryTitle:'Спробуйте AI-продавця прямо зараз',trySub:'Це не демо-скрипт — це той самий агент, який працюватиме на вашому сайті. Поставте йому запитання.'}};
+Object.assign(translations.ru,extra.ru);Object.assign(translations.ua,extra.ua);
+function setLang(lang){document.documentElement.lang=lang==='ua'?'uk':'ru';document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(translations[lang][k]!==undefined)el.innerHTML=translations[lang][k];});document.getElementById('ruBtn').classList.toggle('active',lang==='ru');document.getElementById('uaBtn').classList.toggle('active',lang==='ua');localStorage.setItem('prodaai-lang',lang);}
+setLang(localStorage.getItem('prodaai-lang')||'ru');
+</script>
+<script>
+  const els = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:0.15});
+  els.forEach(el => io.observe(el));
+</script>
+
+<script>
+/* ============================================================
+   ProdaAI — AI sales-agent logic (inlined, zero dependencies)
+   Real AI conversation + real lead handoff to the backend.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var API_CHAT = '/api/chat';
+  var API_LEAD = '/api/lead';
+
+  var I18N = {
+    ru: {
+      chatTitle: 'AI-консультант ProdaAI',
+      status: 'online',
+      greeting: '👋 Здравствуйте! Я AI-консультант ProdaAI.\n\nМогу рассказать, как AI-продавец может работать на вашем сайте, или показать на примере, как он консультирует клиентов.\n\nЧто вам интересно?',
+      quick: ['Как это работает', 'Что он умеет?', 'Сколько стоит?', 'Хочу консультацию'],
+      placeholder: 'Напишите сообщение…',
+      sendTitle: 'Отправить',
+      typing: 'печатает…',
+      offline: 'Сейчас я не могу ответить — AI-модуль ещё не настроен на сервере. Оставьте, пожалуйста, заявку через кнопку консультации, менеджер ответит вручную.',
+      error: 'Произошла ошибка соединения. Попробуйте ещё раз.',
+      leadTitle: 'Проверьте данные заявки',
+      leadYes: 'Да, отправить',
+      leadEdit: 'Изменить',
+      sent: '✅ Готово! Ваша заявка передана менеджеру.\nМы свяжемся с вами по указанному контакту.',
+      sentError: 'Не удалось отправить заявку. Попробуйте ещё раз или напишите нам напрямую.',
+      fabLabel: 'Задать вопрос',
+      fName: 'Имя', fContact: 'Контакт', fSite: 'Сайт', fBusiness: 'Бизнес', fRequest: 'Запрос'
+    },
+    ua: {
+      chatTitle: 'AI-консультант ProdaAI',
+      status: 'online',
+      greeting: '👋 Вітаю! Я AI-консультант ProdaAI.\n\nМожу розповісти, як AI-продавець може працювати на вашому сайті, або показати на прикладі, як він консультує клієнтів.\n\nЩо вам цікаво?',
+      quick: ['Як це працює', 'Що він вміє?', 'Скільки коштує?', 'Хочу консультацію'],
+      placeholder: 'Напишіть повідомлення…',
+      sendTitle: 'Надіслати',
+      typing: 'друкує…',
+      offline: 'Зараз я не можу відповісти — AI-модуль ще не налаштований на сервері. Залиште, будь ласка, заявку через кнопку консультації, менеджер відповість вручну.',
+      error: 'Сталася помилка з’єднання. Спробуйте ще раз.',
+      leadTitle: 'Перевірте дані заявки',
+      leadYes: 'Так, надіслати',
+      leadEdit: 'Змінити',
+      sent: '✅ Готово! Вашу заявку передано менеджеру.\nМи зв’яжемося з вами за вказаним контактом.',
+      sentError: 'Не вдалося надіслати заявку. Спробуйте ще раз або напишіть нам напряму.',
+      fabLabel: 'Поставити запитання',
+      fName: 'Ім\'я', fContact: 'Контакт', fSite: 'Сайт', fBusiness: 'Бізнес', fRequest: 'Запит'
+    }
+  };
+
+  function currentLang() {
+    try { return (localStorage.getItem('prodaai-lang') === 'ua') ? 'ua' : 'ru'; } catch (e) { return 'ru'; }
+  }
+  function t(key, lang) {
+    lang = lang || currentLang();
+    var l = I18N[lang] || I18N.ru;
+    return (l[key] !== undefined) ? l[key] : I18N.ru[key];
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  var STORE_KEY = 'prodaai-chat-v1';
+
+  /* ---------- ChatAgent ---------- */
+  function ChatAgent(opts) {
+    opts = opts || {};
+    this.floating = !!opts.floating;
+    this.mount = opts.mount;         // container element
+    this.autoGreet = opts.autoGreet !== false;
+    this.messages = [];
+    this.pendingLead = null;
+    this.leadSent = false;
+    this.busy = false;
+    this.el = null;
+    this.restore();
+    this.build();
+  }
+
+  ChatAgent.prototype.restore = function () {
+    try {
+      var raw = sessionStorage.getItem(STORE_KEY);
+      if (raw) {
+        var d = JSON.parse(raw);
+        if (Array.isArray(d.messages)) this.messages = d.messages;
+        if (d.leadSent) this.leadSent = true;
+      }
+    } catch (e) { /* ignore */ }
+  };
+  ChatAgent.prototype.persist = function () {
+    try {
+      sessionStorage.setItem(STORE_KEY, JSON.stringify({ messages: this.messages, leadSent: this.leadSent }));
+    } catch (e) { /* ignore */ }
+  };
+
+  ChatAgent.prototype.build = function () {
+    var lang = currentLang();
+    var el = document.createElement('div');
+    el.className = 'paa-chat' + (this.floating ? ' paa-float' : ' paa-inline');
+    el.innerHTML =
+      '<div class="paa-head">' +
+        '<div class="paa-avatar">🤖</div>' +
+        '<div class="paa-head-meta">' +
+          '<div class="paa-name">' + esc(t('chatTitle', lang)) + '</div>' +
+          '<div class="paa-status"><span class="paa-dot"></span><span class="paa-status-txt">' + esc(t('status', lang)) + '</span></div>' +
+        '</div>' +
+        (this.floating ? '<button class="paa-close" aria-label="Close">×</button>' : '') +
+      '</div>' +
+      '<div class="paa-body"></div>' +
+      '<div class="paa-quick"></div>' +
+      '<div class="paa-input">' +
+        '<textarea class="paa-textarea" rows="1" placeholder="' + esc(t('placeholder', lang)) + '"></textarea>' +
+        '<button class="paa-send" aria-label="' + esc(t('sendTitle', lang)) + '">➤</button>' +
+      '</div>';
+
+    this.mount.appendChild(el);
+    this.el = el;
+    this.bodyEl = el.querySelector('.paa-body');
+    this.quickEl = el.querySelector('.paa-quick');
+    this.textarea = el.querySelector('.paa-textarea');
+    this.sendBtn = el.querySelector('.paa-send');
+    this.statusTxt = el.querySelector('.paa-status-txt');
+    this.typingEl = null;
+
+    var self = this;
+
+    // replay stored history
+    var hadHistory = this.messages.length > 0;
+    this.messages.forEach(function (m) { self.renderMessage(m.role, m.text, false); });
+
+    if (!hadHistory) {
+      this.renderMessage('assistant', t('greeting', lang), false);
+      this.showQuick(t('quick', lang));
+      this.persist();
+    } else {
+      this.scrollBottom();
+    }
+
+    // events
+    this.sendBtn.addEventListener('click', function () { self.submit(); });
+    this.textarea.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); self.submit(); }
+    });
+    this.textarea.addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    var close = el.querySelector('.paa-close');
+    if (close) close.addEventListener('click', function () { self.close(); });
+
+    // follow language switch for placeholder/status
+    window.addEventListener('prodaai-lang', function (ev) {
+      var l = ev.detail && ev.detail.lang ? ev.detail.lang : currentLang();
+      self.textarea.placeholder = t('placeholder', l);
+      self.statusTxt.textContent = t('status', l);
+    });
+  };
+
+  ChatAgent.prototype.renderMessage = function (role, text, persist) {
+    var wrap = document.createElement('div');
+    wrap.className = 'paa-msg paa-msg--' + (role === 'user' ? 'user' : 'bot');
+    wrap.textContent = text;
+    this.bodyEl.appendChild(wrap);
+    this.scrollBottom();
+    if (persist !== false) {
+      this.messages.push({ role: role, text: text });
+      this.persist();
+    }
+    return wrap;
+  };
+
+  ChatAgent.prototype.showQuick = function (labels) {
+    var self = this;
+    this.quickEl.innerHTML = '';
+    labels.forEach(function (label) {
+      var chip = document.createElement('button');
+      chip.className = 'paa-chip';
+      chip.textContent = label;
+      chip.addEventListener('click', function () { self.submitText(label); });
+      self.quickEl.appendChild(chip);
+    });
+  };
+  ChatAgent.prototype.clearQuick = function () { this.quickEl.innerHTML = ''; };
+
+  ChatAgent.prototype.showTyping = function (on) {
+    if (on) {
+      if (this.typingEl) return;
+      var el = document.createElement('div');
+      el.className = 'paa-msg paa-msg--bot';
+      el.innerHTML = '<span class="paa-typing"><i></i><i></i><i></i></span>';
+      this.bodyEl.appendChild(el);
+      this.typingEl = el;
+      this.scrollBottom();
+    } else {
+      if (this.typingEl) { this.typingEl.remove(); this.typingEl = null; }
+    }
+  };
+
+  ChatAgent.prototype.scrollBottom = function () {
+    var b = this.bodyEl;
+    if (b) b.scrollTop = b.scrollHeight;
+  };
+
+  ChatAgent.prototype.submit = function () {
+    var text = (this.textarea.value || '').trim();
+    if (!text || this.busy) return;
+    this.textarea.value = '';
+    this.textarea.style.height = 'auto';
+    this.submitText(text);
+  };
+
+  ChatAgent.prototype.submitText = function (text) {
+    if (this.busy) return;
+    text = (text || '').trim();
+    if (!text) return;
+    this.clearQuick();
+    this.renderMessage('user', text);
+    this.callAI();
+  };
+
+  ChatAgent.prototype.callAI = function () {
+    var self = this;
+    this.busy = true;
+    this.showTyping(true);
+
+    var payload = {
+      messages: this.messages.map(function (m) {
+        return { role: m.role === 'user' ? 'user' : 'assistant', content: m.text };
+      }),
+      language: currentLang()
+    };
+
+    fetch(API_CHAT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, data: j }; });
+      })
+      .then(function (res) {
+        self.busy = false;
+        self.showTyping(false);
+
+        if (res.data && res.data.error === 'not_configured') {
+          self.renderMessage('assistant', t('offline'));
+          return;
+        }
+        if (res.data && res.data.reply) {
+          var reply = res.data.reply;
+          var lead = self.extractLead(reply);
+          if (lead) {
+            reply = reply.replace(/__LEAD__\{[\s\S]*?\}\s*$/, '').trim();
+            self.pendingLead = lead;
+          }
+          if (reply) self.renderMessage('assistant', reply);
+          if (lead) self.renderLeadConfirm(lead);
+          return;
+        }
+        self.renderMessage('assistant', t('error'));
+      })
+      .catch(function () {
+        self.busy = false;
+        self.showTyping(false);
+        self.renderMessage('assistant', t('error'));
+      });
+  };
+
+  ChatAgent.prototype.extractLead = function (reply) {
+    var m = reply.match(/__LEAD__(\{[\s\S]*?\})\s*$/);
+    if (!m) return null;
+    try {
+      var lead = JSON.parse(m[1]);
+      if (lead && lead.name && lead.contact) return lead;
+    } catch (e) { /* ignore malformed marker */ }
+    return null;
+  };
+
+  ChatAgent.prototype.renderLeadConfirm = function (lead) {
+    var self = this;
+    var L = I18N[lead.language === 'ua' ? 'ua' : currentLang()];
+    var rows = [];
+    function row(key, val) { if (val) rows.push('<div class="paa-leadrow"><span class="paa-leadkey">' + esc(L[key]) + '</span><span class="paa-leadval">' + esc(val) + '</span></div>'); }
+    row('fName', lead.name);
+    row('fContact', lead.contact);
+    row('fSite', lead.site);
+    row('fBusiness', lead.business);
+    row('fRequest', lead.request);
+
+    var wrap = document.createElement('div');
+    wrap.className = 'paa-msg paa-msg--sys';
+    wrap.innerHTML =
+      '<div class="paa-leadcard">' +
+        '<div class="paa-leadcard-title">' + esc(L.leadTitle) + '</div>' +
+        rows.join('') +
+        '<div class="paa-leadactions">' +
+          '<button class="paa-leadbtn paa-leadbtn--yes">' + esc(L.leadYes) + '</button>' +
+          '<button class="paa-leadbtn paa-leadbtn--edit">' + esc(L.leadEdit) + '</button>' +
+        '</div>' +
+      '</div>';
+    this.bodyEl.appendChild(wrap);
+    this.scrollBottom();
+
+    var yes = wrap.querySelector('.paa-leadbtn--yes');
+    var edit = wrap.querySelector('.paa-leadbtn--edit');
+
+    yes.addEventListener('click', function () {
+      if (self.leadSent || yes.disabled) return;
+      yes.disabled = true;
+      self.sendLead(lead, yes, wrap);
+    });
+    edit.addEventListener('click', function () {
+      if (self.busy) return;
+      wrap.remove();
+      self.pendingLead = null;
+      self.submitText(t('leadEdit', lead.language === 'ua' ? 'ua' : currentLang()));
+    });
+  };
+
+  ChatAgent.prototype.sendLead = function (lead, btn, wrap) {
+    var self = this;
+    var body = {
+      name: lead.name,
+      contact: lead.contact,
+      site: lead.site || '',
+      business: lead.business || '',
+      request: lead.request || '',
+      language: lead.language || currentLang(),
+      idempotencyKey: 'prodaai-' + (lead.contact || '').replace(/[^a-zA-Z0-9]/g, '') + '-' + (lead.name || '').replace(/[^a-zA-Z0-9]/g, '')
+    };
+
+    fetch(API_LEAD, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (data) {
+        if (data && data.ok) {
+          self.leadSent = true;
+          self.persist();
+          wrap.remove();
+          self.renderMessage('assistant', t('sent', lead.language === 'ua' ? 'ua' : currentLang()));
+        } else {
+          btn.disabled = false;
+          self.renderMessage('assistant', t('sentError', lead.language === 'ua' ? 'ua' : currentLang()));
+        }
+      })
+      .catch(function () {
+        btn.disabled = false;
+        self.renderMessage('assistant', t('sentError', lead.language === 'ua' ? 'ua' : currentLang()));
+      });
+  };
+
+  ChatAgent.prototype.open = function () {
+    if (!this.floating) return;
+    this.el.classList.add('paa-open');
+    if (!this.messages.length) { /* already greeted in build */ }
+    this.textarea.focus();
+  };
+  ChatAgent.prototype.close = function () {
+    if (!this.floating) return;
+    this.el.classList.remove('paa-open');
+  };
+  ChatAgent.prototype.isOpen = function () {
+    return this.el.classList.contains('paa-open');
+  };
+
+  /* ---------- bootstrap ---------- */
+  function emitLang() {
+    try { window.dispatchEvent(new CustomEvent('prodaai-lang', { detail: { lang: currentLang() } })); } catch (e) { /* noop */ }
+  }
+
+  function boot() {
+    // Keep widget labels in sync with the site's RU/UA toggle.
+    var ruBtn = document.getElementById('ruBtn');
+    var uaBtn = document.getElementById('uaBtn');
+    if (ruBtn) ruBtn.addEventListener('click', function () { setTimeout(emitLang, 0); });
+    if (uaBtn) uaBtn.addEventListener('click', function () { setTimeout(emitLang, 0); });
+
+    // 1) Floating launcher + panel
+    var fabWrap = document.createElement('div');
+    fabWrap.innerHTML =
+      '<button class="paa-fab" type="button">' +
+        '<span class="paa-fab-emoji">🤖</span>' +
+        '<span class="paa-fab-label">' + esc(t('fabLabel')) + '</span>' +
+        '<span class="paa-fab-pulse"></span>' +
+      '</button>';
+    document.body.appendChild(fabWrap);
+    var fab = fabWrap.querySelector('.paa-fab');
+    var fabLabel = fab.querySelector('.paa-fab-label');
+    var floatMount = document.createElement('div');
+    document.body.appendChild(floatMount);
+
+    var floatingAgent = new ChatAgent({ floating: true, mount: floatMount, autoGreet: true });
+
+    window.addEventListener('prodaai-lang', function () { fabLabel.textContent = t('fabLabel'); });
+
+    fab.addEventListener('click', function () {
+      if (floatingAgent.isOpen()) floatingAgent.close();
+      else floatingAgent.open();
+    });
+
+    // 2) Inline embedded chat (in the landing section) — lazy mount
+    var inlineHolder = document.getElementById('paa-inline-chat');
+    if (inlineHolder) {
+      var started = false;
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting && !started) {
+            started = true;
+            new ChatAgent({ floating: false, mount: inlineHolder });
+            io.disconnect();
+          }
+        });
+      }, { rootMargin: '200px' });
+      io.observe(inlineHolder);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+
+</script>
+</body>
+</html>
